@@ -1,0 +1,26 @@
+name: Build UHID Module
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build Docker image
+      run: docker build -t kobo-hid-builder .
+    - name: Create container
+      run: docker create --name extract kobo-hid-builder
+    - name: Copy UHID module
+      run: docker cp extract:/build/output/uhid.ko ./uhid.ko
+    - name: Remove container
+      run: docker rm extract
+    - name: Upload UHID module artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: uhid-module
+        path: uhid.ko
